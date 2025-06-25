@@ -1,0 +1,38 @@
+application:
+  name: ${APPLICATION_NAME}
+
+server:
+  address: ${SERVER_ADDRESS}
+  port: ${SERVER_PORT}
+
+spring:
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: ${DATASOURCE_DRIVER_CLASS_NAME}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO}
+    show-sql: ${JPA_SHOW_SQL}
+    properties:
+      hibernate:
+        format_sql: ${JPA_PROPERTIES_HIBERNATE_FORMAT_SQL}
+
+    redis:
+        host: ${REDIS_HOST}
+        port: ${REDIS_PORT}
+
+aws:
+  access-key: ${AWS_ACCESS_KEY}
+  secret-key: ${AWS_SECRET_KEY}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    region: ${AWS_S3_REGION}
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+  time:
+    expiration: ${JWT_TIME_EXPIRATION}
