@@ -17,4 +17,6 @@ public interface IDesireService {
 
     void deleteDesire(UUID id);
 
+
+
 }

@@ -36,3 +36,4 @@ jwt:
     key: ${JWT_SECRET_KEY}
   time:
     expiration: ${JWT_TIME_EXPIRATION}
+    refresh: ${JWT_TIME_EXPIRATION_EXPIRATION}

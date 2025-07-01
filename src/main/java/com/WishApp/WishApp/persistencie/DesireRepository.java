@@ -12,7 +12,6 @@ import java.util.UUID;
 @Repository
 public interface DesireRepository extends JpaRepository<Desire, UUID> {
 
-
     Page<Desire> findByUserId(UUID userId, Pageable pageable);
 
 }
