@@ -1,5 +1,6 @@
 package com.WishApp.WishApp.config;
 
+import com.WishApp.WishApp.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,32 +21,35 @@ public class JwtUtils {
     private String secretKey;
 
     @Value("${jwt.time.expiration}")
-    private String timeExpiration;
+    private long timeExpiration;
 
-    @Value("${jwt.time.expiration.refresh}")
-    private String timeExpirationRefresh;
-
+    @Value("${jwt.time.refresh}")
+    private long timeExpirationRefresh;
 
     //Crear un token
 
-    public String generateToken(UUID userId , String username) {
+    public String generateToken(User user , long expireTime) {
 
         return Jwts.builder()
-                .setSubject(username)
-                .claim("id", userId)
+                .setSubject(user.getUsername())
+                .claim("id", user.getId())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(timeExpiration)))
+                .setExpiration(new Date(System.currentTimeMillis() + expireTime))
                 .signWith(getSignatureKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(){
+    public String generateAccessToken (User user) {
 
-        return toString();
+        return generateToken(user,timeExpiration);
     }
 
+    public String generateRefreshToken(User user){
 
-    //validad token de acceso
+        return generateToken(user , timeExpirationRefresh);
+    }
+
+    //validar token de acceso
     public boolean validateToken(String token) {
         try {
 
@@ -74,8 +78,6 @@ public class JwtUtils {
         Claims claims = extractAllClaims(token);
         return clazz.apply(claims);
     }
-
-
 
     // Obtener todos los claims del token
 

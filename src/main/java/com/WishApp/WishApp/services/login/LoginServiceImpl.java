@@ -1,10 +1,13 @@
 package com.WishApp.WishApp.services.login;
 
 import com.WishApp.WishApp.config.JwtUtils;
+import com.WishApp.WishApp.entities.Token;
 import com.WishApp.WishApp.entities.User;
+import com.WishApp.WishApp.entities.enums.TokenType;
 import com.WishApp.WishApp.excepciones.User.IncorrectCredentialsException;
 import com.WishApp.WishApp.http.request.LoginRequestDTO;
 import com.WishApp.WishApp.http.response.LoginResponseDTO;
+import com.WishApp.WishApp.persistencie.TokenRepository;
 import com.WishApp.WishApp.persistencie.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +38,7 @@ public class LoginServiceImpl implements ILoginService, UserDetailsService {
     private AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
 
 
     @Override
@@ -50,14 +55,39 @@ public class LoginServiceImpl implements ILoginService, UserDetailsService {
             throw new IncorrectCredentialsException("Credenciales incorrectas : intentalo de nuevo");
         }
 
-        String jwt = jwtUtils.generateToken(user.getId(), user.getUsername());
+        revokeAllUserTokens(user);
+
+        String accessToken = jwtUtils.generateAccessToken(user);
+        String refreshToken = jwtUtils.generateRefreshToken(user);
+
+        Token token = Token.builder()
+                .token(refreshToken)
+                .tokenType(TokenType.BEARER)
+                .user(user)
+                .expired(false)
+                .revoked(false)
+                .build();
+
+        tokenRepository.save(token);
 
         return new LoginResponseDTO(
                 user.getId(),
                 user.getUsername(),
-                jwt,
+                accessToken,
+                refreshToken,
                 "Autenticación exitosa"
         );
+    }
+
+    private void revokeAllUserTokens(User user){
+
+        List<Token> validUserTokens = tokenRepository.findAllValidTokensByUser(user.getId());
+        validUserTokens.forEach(t -> {
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepository.saveAll(validUserTokens);
+
     }
 
     @Override
@@ -85,6 +115,11 @@ public class LoginServiceImpl implements ILoginService, UserDetailsService {
         userDetails.getAuthorities().forEach(auth -> System.out.println(" - " + auth.getAuthority()));
 
         return userDetails;
+    }
+
+    @Override
+    public LoginResponseDTO refreshToken(String authHeader) {
+    return null;
     }
 
 }

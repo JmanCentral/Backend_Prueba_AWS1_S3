@@ -10,4 +10,6 @@ public interface ILoginService  {
     LoginResponseDTO userAutentication(LoginRequestDTO loginRequestDTO);
 
     UserDetails loadUserByUsername(String username);
+
+    LoginResponseDTO refreshToken(String authHeader);
 }
