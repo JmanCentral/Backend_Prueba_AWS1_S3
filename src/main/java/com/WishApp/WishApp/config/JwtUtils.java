@@ -39,6 +39,24 @@ public class JwtUtils {
                 .compact();
     }
 
+    public boolean isTokenValid(String token, User user) {
+        final String username = getUsername(token);
+        return (username.equals(user.getUsername())) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return Jwts.parser()
+                .setSigningKey(getSignatureKey())
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+    }
+
+
     public String generateAccessToken (User user) {
 
         return generateToken(user,timeExpiration);
@@ -66,7 +84,7 @@ public class JwtUtils {
 
     //Obtener username del token
 
-    public String getUsername(String token) {
+        public String getUsername(String token) {
 
         return getClaim(token, Claims::getSubject);
     }

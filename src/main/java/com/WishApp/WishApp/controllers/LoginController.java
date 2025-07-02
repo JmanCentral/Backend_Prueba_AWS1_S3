@@ -4,10 +4,7 @@ import com.WishApp.WishApp.http.response.LoginResponseDTO;
 import com.WishApp.WishApp.services.login.ILoginService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -21,6 +18,12 @@ public class LoginController {
         LoginResponseDTO loginResponseDTO = loginService.userAutentication(loginRequestDTO);
         return ResponseEntity.ok(loginResponseDTO);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        return ResponseEntity.ok(loginService.refreshToken(authHeader));
+    }
+
 
 
 }

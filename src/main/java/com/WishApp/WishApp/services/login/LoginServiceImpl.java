@@ -119,7 +119,51 @@ public class LoginServiceImpl implements ILoginService, UserDetailsService {
 
     @Override
     public LoginResponseDTO refreshToken(String authHeader) {
-    return null;
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token no presente o mal formado");
+        }
+
+        String refreshToken = authHeader.substring(7); // quitar "Bearer "
+        String username = jwtUtils.getUsername(refreshToken);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        // Validar refresh token contra el usuario
+        if (!jwtUtils.isTokenValid(refreshToken, user)) {
+            throw new RuntimeException("Refresh token inválido o expirado");
+        }
+
+        // Opcional: revocar tokens anteriores
+        List<Token> validTokens = tokenRepository.findAllValidTokensByUser(user.getId());
+        validTokens.forEach(t -> {
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepository.saveAll(validTokens);
+
+        // Generar nuevos tokens
+        String newAccessToken = jwtUtils.generateAccessToken(user);
+        String newRefreshToken = jwtUtils.generateRefreshToken(user);
+
+        // Guardar el nuevo refresh token
+        Token token = Token.builder()
+                .token(newRefreshToken)
+                .tokenType(TokenType.BEARER)
+                .user(user)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenRepository.save(token);
+
+        return LoginResponseDTO.builder()
+                .id(user.getId())
+                .name(user.getUsername())
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .message("Token refrescado correctamente")
+                .build();
     }
+
 
 }

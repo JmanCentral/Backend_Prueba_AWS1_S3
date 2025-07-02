@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface TokenRepository extends JpaRepository<Token, UUID> {
 
     @Query("SELECT t FROM Token t WHERE t.user.id = :userId AND (t.expired = false AND t.revoked = false)")
-    List<Token> findAllValidTokensByUser(UUID id);
+    List<Token> findAllValidTokensByUser(UUID userId);
 }
